@@ -5,6 +5,8 @@ import com.root.redis.exception.ValidationException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
+import java.util.Random;
 
 import static com.root.redis.constants.ExceptionConstants.INTERNAL_ERROR;
 
@@ -25,6 +27,10 @@ public final class CommonUtil {
             throw new ValidationException.Builder().errorMessage(INTERNAL_ERROR).build();
         }
 
+    }
+
+    public static String generateOtp(){
+        return new DecimalFormat("000000").format(new Random().nextInt(999999));
     }
 
 }

@@ -2,11 +2,14 @@ package com.root.authservice.helpers;
 
 import com.root.authservice.config.ConsulConfig;
 import com.root.authservice.vo.UserVO;
+import com.root.redis.exception.ValidationException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import static com.root.redis.constants.ExceptionConstants.INVALID_REQUEST;
 
 @Component
 public class CookieHelper {
@@ -22,7 +25,7 @@ public class CookieHelper {
     }
 
     public void setCookie(UserVO userVO,
-                          HttpServletResponse servletResponse, HttpServletRequest serverHttpRequest){
+                          HttpServletResponse servletResponse, HttpServletRequest serverHttpRequest) throws ValidationException {
 
         int cookieTimeout = config.getConfigValueByKey("COOKIE_TIMEOUT", 1080);
         Cookie sessionCookie = null;
@@ -32,8 +35,31 @@ public class CookieHelper {
                 sessionCookie = cookie;
             }
         }
+
+        if(sessionCookie == null){
+            throw new ValidationException.Builder().errorMessage(INVALID_REQUEST).build();
+        }
+
         servletResponse.addCookie(getSessionCookie(sessionCookie, cookieTimeout));
         servletResponse.addCookie(getJwtCookie(userVO, cookieTimeout));
+    }
+
+    public void setCookie(HttpServletResponse servletResponse, HttpServletRequest serverHttpRequest) throws ValidationException {
+
+        int cookieTimeout = config.getConfigValueByKey("COOKIE_TIMEOUT", 1080);
+        Cookie sessionCookie = null;
+        Cookie[] cookies = serverHttpRequest.getCookies();
+        for(Cookie cookie : cookies){
+            if("session-id".equals(cookie.getName())){
+                sessionCookie = cookie;
+            }
+        }
+
+        if(sessionCookie == null){
+            throw new ValidationException.Builder().errorMessage(INVALID_REQUEST).build();
+        }
+
+        servletResponse.addCookie(getSessionCookie(sessionCookie, cookieTimeout));
     }
 
     private Cookie getSessionCookie(Cookie sessionCookie, int cookieTimeout){
@@ -53,5 +79,4 @@ public class CookieHelper {
         jwtTokenCookie.setPath("/");
         return jwtTokenCookie;
     }
-
 }

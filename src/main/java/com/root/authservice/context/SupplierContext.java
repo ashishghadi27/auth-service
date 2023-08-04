@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class SupplierContext extends RedisSessionContext {
 
     private UserVO userVO;
+    private String otp;
 
     @Override
     public String getContextIdentifier() {
