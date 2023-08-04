@@ -10,16 +10,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public interface LoginService {
 
-    AuthResponseVO login(AuthRequestVO request,
-                         HttpServletResponse servletResponse,
-                         HttpServletRequest serverHttpRequest) throws ValidationException;
+    AuthResponseVO login(AuthRequestVO request) throws ValidationException;
 
 
-    OtpResponseVO sendOtp(AuthRequestVO request,
-                          HttpServletResponse servletResponse,
-                          HttpServletRequest serverHttpRequest) throws ValidationException;
+    OtpResponseVO sendOtp(AuthRequestVO request) throws ValidationException;
 
-    OtpResponseVO validateOtp(OtpRequestVO otpRequest, HttpServletResponse servletResponse,
-                              HttpServletRequest serverHttpRequest) throws ValidationException;
+    OtpResponseVO validateOtp(OtpRequestVO otpRequest) throws ValidationException;
 
 }

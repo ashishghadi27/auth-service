@@ -11,8 +11,6 @@ import com.root.authservice.utils.ValidationUtil;
 import com.root.authservice.vo.*;
 import com.root.redis.exception.ValidationException;
 import com.root.redis.services.RedisContextWrapper;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,9 +42,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public AuthResponseVO login(AuthRequestVO request,
-                                HttpServletResponse servletResponse,
-                                HttpServletRequest serverHttpRequest) throws ValidationException {
+    public AuthResponseVO login(AuthRequestVO request) throws ValidationException {
         AuthResponseVO authResponse = new AuthResponseVO();
         String sessionId = sessionUtil.getSessionId();
         try{
@@ -62,7 +58,7 @@ public class LoginServiceImpl implements LoginService {
 
 
                 authResponse.setUser(userVO);
-                cookieHelper.setCookie(userVO, servletResponse, serverHttpRequest);
+                cookieHelper.setCookie(userVO);
             }
         }
         catch (ValidationException e){
@@ -73,9 +69,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public OtpResponseVO sendOtp(AuthRequestVO request,
-                                 HttpServletResponse servletResponse,
-                                 HttpServletRequest serverHttpRequest) throws ValidationException {
+    public OtpResponseVO sendOtp(AuthRequestVO request) throws ValidationException {
 
         String sessionId = sessionUtil.getSessionId();
 
@@ -92,7 +86,7 @@ public class LoginServiceImpl implements LoginService {
             OtpResponseVO otpResponseVO = new OtpResponseVO();
             if(sendEmailUtil.sendMail(otp, request.getEmailId())){
                 redisContextWrapper.setContext(sessionId, supplierContext);
-                cookieHelper.setCookie(servletResponse, serverHttpRequest);
+                cookieHelper.setCookie();
                 otpResponseVO.setResponseCode("200");
                 otpResponseVO.setResponseMsg("SEND_OTP_SUCCESS");
                 return otpResponseVO;
@@ -103,9 +97,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public OtpResponseVO validateOtp(OtpRequestVO otpRequest,
-                                     HttpServletResponse servletResponse,
-                                     HttpServletRequest serverHttpRequest) throws ValidationException {
+    public OtpResponseVO validateOtp(OtpRequestVO otpRequest) throws ValidationException {
         String sessionId = sessionUtil.getSessionId();
 
         SupplierContext supplierContext = redisContextWrapper.getContext(sessionId, SupplierContext.class);
@@ -115,7 +107,7 @@ public class LoginServiceImpl implements LoginService {
 
         OtpResponseVO otpResponseVO = new OtpResponseVO();
         if(generatedOtp.equalsIgnoreCase(otpRequest.getOtp())){
-            cookieHelper.setCookie(supplierContext.getUserVO(), servletResponse, serverHttpRequest);
+            cookieHelper.setCookie(supplierContext.getUserVO());
             otpResponseVO.setResponseMsg("VERIFY_OTP_SUCCESS");
             return otpResponseVO;
         }

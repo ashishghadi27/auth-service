@@ -18,18 +18,26 @@ public class CookieHelper {
 
     private final ConsulConfig config;
 
+    private HttpServletRequest httpServletRequest;
+
+    private HttpServletResponse httpServletResponse;
+
     @Autowired
-    public CookieHelper(JWTHelper jwtHelper, ConsulConfig config) {
+    public CookieHelper(JWTHelper jwtHelper,
+                        ConsulConfig config,
+                        HttpServletRequest httpServletRequest,
+                        HttpServletResponse httpServletResponse) {
         this.jwtHelper = jwtHelper;
         this.config = config;
+        this.httpServletRequest = httpServletRequest;
+        this.httpServletResponse = httpServletResponse;
     }
 
-    public void setCookie(UserVO userVO,
-                          HttpServletResponse servletResponse, HttpServletRequest serverHttpRequest) throws ValidationException {
+    public void setCookie(UserVO userVO) throws ValidationException {
 
         int cookieTimeout = config.getConfigValueByKey("COOKIE_TIMEOUT", 1080);
         Cookie sessionCookie = null;
-        Cookie[] cookies = serverHttpRequest.getCookies();
+        Cookie[] cookies = httpServletRequest.getCookies();
         for(Cookie cookie : cookies){
             if("session-id".equals(cookie.getName())){
                 sessionCookie = cookie;
@@ -40,15 +48,15 @@ public class CookieHelper {
             throw new ValidationException.Builder().errorMessage(INVALID_REQUEST).build();
         }
 
-        servletResponse.addCookie(getSessionCookie(sessionCookie, cookieTimeout));
-        servletResponse.addCookie(getJwtCookie(userVO, cookieTimeout));
+        httpServletResponse.addCookie(getSessionCookie(sessionCookie, cookieTimeout));
+        httpServletResponse.addCookie(getJwtCookie(userVO, cookieTimeout));
     }
 
-    public void setCookie(HttpServletResponse servletResponse, HttpServletRequest serverHttpRequest) throws ValidationException {
+    public void setCookie() throws ValidationException {
 
         int cookieTimeout = config.getConfigValueByKey("COOKIE_TIMEOUT", 1080);
         Cookie sessionCookie = null;
-        Cookie[] cookies = serverHttpRequest.getCookies();
+        Cookie[] cookies = httpServletRequest.getCookies();
         for(Cookie cookie : cookies){
             if("session-id".equals(cookie.getName())){
                 sessionCookie = cookie;
@@ -59,7 +67,7 @@ public class CookieHelper {
             throw new ValidationException.Builder().errorMessage(INVALID_REQUEST).build();
         }
 
-        servletResponse.addCookie(getSessionCookie(sessionCookie, cookieTimeout));
+        httpServletResponse.addCookie(getSessionCookie(sessionCookie, cookieTimeout));
     }
 
     private Cookie getSessionCookie(Cookie sessionCookie, int cookieTimeout){
