@@ -106,8 +106,12 @@ public class LoginServiceImpl implements LoginService {
         String generatedOtp = supplierContext.getOtp();
 
         OtpResponseVO otpResponseVO = new OtpResponseVO();
-        if(generatedOtp.equalsIgnoreCase(otpRequest.getOtp())){
+        if(StringUtils.isNotEmpty(generatedOtp) && generatedOtp.equalsIgnoreCase(otpRequest.getOtp())){
             cookieHelper.setCookie(supplierContext.getUserVO());
+
+            supplierContext.setOtp(null);
+            redisContextWrapper.setContext(sessionId, supplierContext);
+
             otpResponseVO.setResponseMsg("VERIFY_OTP_SUCCESS");
             return otpResponseVO;
         }
