@@ -1,6 +1,8 @@
 package com.root.authservice.utils;
 
 public final class Constants {
+
+    public static final int OTP_TIMEOUT_IN_MINS = 5;
     public static final String EMAIL_TEMPLATE_1 = "<html><head></head><body><div style=\"font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2\">\r\n"
             + "  <div style=\"margin:50px auto;width:70%;padding:20px 0\">\r\n"
             + "    <div style=\"border-bottom:1px solid #eee\">\r\n"

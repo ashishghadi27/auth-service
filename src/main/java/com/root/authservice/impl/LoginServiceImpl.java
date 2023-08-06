@@ -1,14 +1,12 @@
 package com.root.authservice.impl;
 
+import com.root.authservice.config.ConsulConfig;
 import com.root.authservice.context.SupplierContext;
 import com.root.authservice.helpers.CookieHelper;
 import com.root.authservice.proxy.UserProxy;
 import com.root.authservice.service.AsyncService;
 import com.root.authservice.service.LoginService;
-import com.root.authservice.utils.CommonUtil;
-import com.root.authservice.utils.SendEmailUtil;
-import com.root.authservice.utils.SessionUtil;
-import com.root.authservice.utils.ValidationUtil;
+import com.root.authservice.utils.*;
 import com.root.authservice.vo.*;
 import com.root.redis.exception.ValidationException;
 import com.root.redis.services.RedisContextWrapper;
@@ -16,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -29,23 +29,23 @@ public class LoginServiceImpl implements LoginService {
 
     private final SessionUtil sessionUtil;
 
-    private final SendEmailUtil sendEmailUtil;
-
     private final AsyncService asyncService;
+
+    private final ConsulConfig config;
 
     @Autowired
     public LoginServiceImpl(UserProxy userProxy,
                             CookieHelper cookieHelper,
                             RedisContextWrapper redisContextWrapper,
                             SessionUtil sessionUtil,
-                            SendEmailUtil sendEmailUtil,
-                            AsyncService asyncService) {
+                            AsyncService asyncService,
+                            ConsulConfig config) {
         this.userProxy = userProxy;
         this.cookieHelper = cookieHelper;
         this.redisContextWrapper = redisContextWrapper;
         this.sessionUtil = sessionUtil;
-        this.sendEmailUtil = sendEmailUtil;
         this.asyncService = asyncService;
+        this.config = config;
     }
 
     @Override
@@ -88,6 +88,7 @@ public class LoginServiceImpl implements LoginService {
             SupplierContext supplierContext = new SupplierContext();
             supplierContext.setOtp(otp);
             supplierContext.setUserVO(userVO);
+            supplierContext.setOtpSentTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
 
             redisContextWrapper.setContext(sessionId, supplierContext);
             cookieHelper.setCookie();
@@ -120,14 +121,23 @@ public class LoginServiceImpl implements LoginService {
         String generatedOtp = supplierContext.getOtp();
 
         OtpResponseVO otpResponseVO = new OtpResponseVO();
-        if (StringUtils.isNotEmpty(generatedOtp) && generatedOtp.equalsIgnoreCase(otpRequest.getOtp())) {
-            cookieHelper.setCookie(supplierContext.getUserVO());
+        if (StringUtils.isNotEmpty(generatedOtp)
+                && generatedOtp.equalsIgnoreCase(otpRequest.getOtp())) {
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            LocalDateTime otpSentTime = LocalDateTime.parse(supplierContext.getOtpSentTime(),
+                    DateTimeFormatter.ISO_DATE_TIME);
+            int otpTimeOut = config.getConfigValueByKey("OTP_TIMEOUT_IN_MINS", Constants.OTP_TIMEOUT_IN_MINS);
+            otpSentTime = otpSentTime.plusMinutes(otpTimeOut);
+            if ((currentDateTime.isBefore(otpSentTime) || currentDateTime.equals(otpSentTime))){
+                cookieHelper.setCookie(supplierContext.getUserVO());
 
-            supplierContext.setOtp(null);
-            redisContextWrapper.setContext(sessionId, supplierContext);
+                supplierContext.setOtp(null);
+                redisContextWrapper.setContext(sessionId, supplierContext);
 
-            otpResponseVO.setResponseMsg("VERIFY_OTP_SUCCESS");
-            return otpResponseVO;
+                otpResponseVO.setResponseMsg("VERIFY_OTP_SUCCESS");
+                return otpResponseVO;
+            }
+            throw new ValidationException.Builder().errorMessage("OTP_EXPIRED").build();
         }
         throw new ValidationException.Builder().errorMessage("VERIFY_OTP_FAILED").build();
     }
