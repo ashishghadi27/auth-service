@@ -10,7 +10,7 @@ import java.util.Properties;
 @Component
 public class SendEmailUtil {
 
-    public boolean sendMail(String otp, String email) {
+    public void sendMail(String otp, String email) {
         String content = Constants.EMAIL_TEMPLATE_1 + otp + Constants.EMAIL_TEMPLATE_2;
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
@@ -34,9 +34,8 @@ public class SendEmailUtil {
             message1.setContent(content, "text/html");
             // send message
             Transport.send(message1);
-            return true;
         } catch (MessagingException e) {
-            return false;
+            System.out.println(e.getCause() + "::::::" + e.getMessage());
         }
     }
 

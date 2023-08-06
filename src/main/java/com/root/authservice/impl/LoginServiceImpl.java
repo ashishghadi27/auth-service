@@ -3,6 +3,7 @@ package com.root.authservice.impl;
 import com.root.authservice.context.SupplierContext;
 import com.root.authservice.helpers.CookieHelper;
 import com.root.authservice.proxy.UserProxy;
+import com.root.authservice.service.AsyncService;
 import com.root.authservice.service.LoginService;
 import com.root.authservice.utils.CommonUtil;
 import com.root.authservice.utils.SendEmailUtil;
@@ -14,6 +15,8 @@ import com.root.redis.services.RedisContextWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class LoginServiceImpl implements LoginService {
@@ -28,27 +31,31 @@ public class LoginServiceImpl implements LoginService {
 
     private final SendEmailUtil sendEmailUtil;
 
+    private final AsyncService asyncService;
+
     @Autowired
     public LoginServiceImpl(UserProxy userProxy,
                             CookieHelper cookieHelper,
                             RedisContextWrapper redisContextWrapper,
                             SessionUtil sessionUtil,
-                            SendEmailUtil sendEmailUtil){
+                            SendEmailUtil sendEmailUtil,
+                            AsyncService asyncService) {
         this.userProxy = userProxy;
         this.cookieHelper = cookieHelper;
         this.redisContextWrapper = redisContextWrapper;
         this.sessionUtil = sessionUtil;
         this.sendEmailUtil = sendEmailUtil;
+        this.asyncService = asyncService;
     }
 
     @Override
     public AuthResponseVO login(AuthRequestVO request) throws ValidationException {
         AuthResponseVO authResponse = new AuthResponseVO();
         String sessionId = sessionUtil.getSessionId();
-        try{
+        try {
             ValidationUtil.validateRequest(request);
             UserVO userVO = userProxy.getUserByEmail(request.getEmailId());
-            if(ValidationUtil.isValidUser(request.getPassword(), userVO.getPassword())){
+            if (ValidationUtil.isValidUser(request.getPassword(), userVO.getPassword())) {
                 authResponse.setValidUser(true);
                 userVO.setPassword(null);
 
@@ -60,8 +67,7 @@ public class LoginServiceImpl implements LoginService {
                 authResponse.setUser(userVO);
                 cookieHelper.setCookie(userVO);
             }
-        }
-        catch (ValidationException e){
+        } catch (ValidationException e) {
             //LOGGING
             throw e;
         }
@@ -76,24 +82,32 @@ public class LoginServiceImpl implements LoginService {
         ValidationUtil.validateEmail(request.getEmailId());
 
         UserVO userVO = userProxy.getUserByEmail(request.getEmailId());
-        if(userVO != null && StringUtils.isNotEmpty(userVO.getEmail())){
+        if (userVO != null && StringUtils.isNotEmpty(userVO.getEmail())) {
             String otp = CommonUtil.generateOtp();
 
             SupplierContext supplierContext = new SupplierContext();
             supplierContext.setOtp(otp);
             supplierContext.setUserVO(userVO);
 
+            redisContextWrapper.setContext(sessionId, supplierContext);
+            cookieHelper.setCookie();
+
             OtpResponseVO otpResponseVO = new OtpResponseVO();
-            if(sendEmailUtil.sendMail(otp, request.getEmailId())){
-                redisContextWrapper.setContext(sessionId, supplierContext);
-                cookieHelper.setCookie();
-                otpResponseVO.setResponseCode("200");
-                otpResponseVO.setResponseMsg("SEND_OTP_SUCCESS");
-                return otpResponseVO;
-            }
-            throw new ValidationException.Builder().errorMessage("SEND_OTP_FAILED").build();
+            otpResponseVO.setResponseCode("200");
+            otpResponseVO.setResponseMsg("SEND_OTP_SUCCESS");
+
+            CompletableFuture.runAsync(() -> {
+                try {
+                    asyncService.sendEmail(otp, request.getEmailId());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+
+            return otpResponseVO;
         }
         throw new ValidationException.Builder().errorMessage("INVALID_USER").build();
+
     }
 
     @Override
@@ -106,7 +120,7 @@ public class LoginServiceImpl implements LoginService {
         String generatedOtp = supplierContext.getOtp();
 
         OtpResponseVO otpResponseVO = new OtpResponseVO();
-        if(StringUtils.isNotEmpty(generatedOtp) && generatedOtp.equalsIgnoreCase(otpRequest.getOtp())){
+        if (StringUtils.isNotEmpty(generatedOtp) && generatedOtp.equalsIgnoreCase(otpRequest.getOtp())) {
             cookieHelper.setCookie(supplierContext.getUserVO());
 
             supplierContext.setOtp(null);
