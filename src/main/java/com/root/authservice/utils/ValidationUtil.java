@@ -3,7 +3,7 @@ package com.root.authservice.utils;
 
 import com.root.authservice.context.SupplierContext;
 import com.root.authservice.vo.AuthRequestVO;
-import com.root.redis.exception.ValidationException;
+import com.root.commondependencies.exception.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Matcher;

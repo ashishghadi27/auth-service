@@ -8,7 +8,7 @@ import com.root.authservice.service.AsyncService;
 import com.root.authservice.service.LoginService;
 import com.root.authservice.utils.*;
 import com.root.authservice.vo.*;
-import com.root.redis.exception.ValidationException;
+import com.root.commondependencies.exception.ValidationException;
 import com.root.redis.services.RedisContextWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

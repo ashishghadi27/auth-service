@@ -1,8 +1,8 @@
 package com.root.authservice.exception;
 
+import com.root.commondependencies.vo.ErrorVO;
 import com.root.redis.constants.ExceptionConstants;
-import com.root.redis.exception.ValidationException;
-import com.root.redis.vo.ErrorVO;
+import com.root.commondependencies.exception.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

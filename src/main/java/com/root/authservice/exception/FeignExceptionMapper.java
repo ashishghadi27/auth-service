@@ -1,7 +1,7 @@
 package com.root.authservice.exception;
 
 import com.root.redis.constants.ExceptionConstants;
-import com.root.redis.exception.ValidationException;
+import com.root.commondependencies.exception.ValidationException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import org.springframework.http.HttpStatus;

@@ -2,7 +2,7 @@ package com.root.authservice.helpers;
 
 import com.root.authservice.config.ConsulConfig;
 import com.root.authservice.vo.UserVO;
-import com.root.redis.exception.ValidationException;
+import com.root.commondependencies.exception.ValidationException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

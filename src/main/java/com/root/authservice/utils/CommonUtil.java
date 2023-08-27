@@ -1,6 +1,6 @@
 package com.root.authservice.utils;
 
-import com.root.redis.exception.ValidationException;
+import com.root.commondependencies.exception.ValidationException;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;

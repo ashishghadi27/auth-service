@@ -7,7 +7,7 @@ import com.root.authservice.vo.AuthRequestVO;
 import com.root.authservice.vo.AuthResponseVO;
 import com.root.authservice.vo.OtpRequestVO;
 import com.root.authservice.vo.OtpResponseVO;
-import com.root.redis.exception.ValidationException;
+import com.root.commondependencies.exception.ValidationException;
 import com.root.redis.services.RedisContextWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -4,9 +4,7 @@ import com.root.authservice.vo.AuthRequestVO;
 import com.root.authservice.vo.AuthResponseVO;
 import com.root.authservice.vo.OtpRequestVO;
 import com.root.authservice.vo.OtpResponseVO;
-import com.root.redis.exception.ValidationException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.root.commondependencies.exception.ValidationException;
 
 public interface LoginService {
 
