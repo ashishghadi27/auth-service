@@ -1,11 +1,9 @@
 package com.root.authservice.context;
 
-import com.root.authservice.vo.UserVO;
+import com.root.commondependencies.vo.UserVO;
 import com.root.redis.context.RedisSessionContext;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor

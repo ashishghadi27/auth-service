@@ -3,17 +3,13 @@ package com.root.authservice.controllers;
 import com.root.authservice.helpers.CookieHelper;
 import com.root.authservice.service.LoginService;
 import com.root.authservice.utils.SessionUtil;
-import com.root.authservice.vo.AuthRequestVO;
-import com.root.authservice.vo.AuthResponseVO;
-import com.root.authservice.vo.OtpRequestVO;
-import com.root.authservice.vo.OtpResponseVO;
+import com.root.authservice.vo.*;
 import com.root.commondependencies.exception.ValidationException;
+import com.root.commondependencies.vo.DelRequestVO;
+import com.root.commondependencies.vo.UserVO;
 import com.root.redis.services.RedisContextWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -49,6 +45,14 @@ public class AuthController {
     @PostMapping("/setPass")
     public String setPass() throws ValidationException {
         return "deleted";
+    }
+    @PostMapping("/register")
+    public RegisterResponseVO register(@RequestBody UserVO requestVO) throws ValidationException {
+        return loginService.register(requestVO);
+    }
+    @DeleteMapping("/delete")
+    public DelResponseVO delete(@RequestBody DelRequestVO requestVO) throws ValidationException {
+        return loginService.delete(requestVO);
     }
 
 }

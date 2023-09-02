@@ -9,6 +9,8 @@ import com.root.authservice.service.LoginService;
 import com.root.authservice.utils.*;
 import com.root.authservice.vo.*;
 import com.root.commondependencies.exception.ValidationException;
+import com.root.commondependencies.vo.DelRequestVO;
+import com.root.commondependencies.vo.UserVO;
 import com.root.redis.services.RedisContextWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,7 +130,7 @@ public class LoginServiceImpl implements LoginService {
                     DateTimeFormatter.ISO_DATE_TIME);
             int otpTimeOut = config.getConfigValueByKey("OTP_TIMEOUT_IN_MINS", Constants.OTP_TIMEOUT_IN_MINS);
             otpSentTime = otpSentTime.plusMinutes(otpTimeOut);
-            if ((currentDateTime.isBefore(otpSentTime) || currentDateTime.equals(otpSentTime))){
+            if ((currentDateTime.isBefore(otpSentTime) || currentDateTime.equals(otpSentTime))) {
                 cookieHelper.setCookie(supplierContext.getUserVO());
 
                 supplierContext.setOtp(null);
@@ -140,5 +142,53 @@ public class LoginServiceImpl implements LoginService {
             throw new ValidationException.Builder().errorMessage("OTP_EXPIRED").build();
         }
         throw new ValidationException.Builder().errorMessage("VERIFY_OTP_FAILED").build();
+    }
+
+    @Override
+    public RegisterResponseVO register(UserVO requestVO) throws ValidationException {
+        RegisterResponseVO registerResponseVO = new RegisterResponseVO();
+        String sessionId = sessionUtil.getSessionId();
+        try {
+
+            ValidationUtil.validateEmail(requestVO.getEmail());
+            UserVO userVO = userProxy.getUserByEmail(requestVO.getEmail());
+            ValidationUtil.validateRegisterUser(userVO, requestVO);
+            SupplierContext supplierContext = redisContextWrapper.getContext(sessionId, SupplierContext.class);
+            String role = supplierContext.getUserVO().getRole();
+            if (("ADMIN").equals(role)) {
+                requestVO.setPassword(CommonUtil.getMd5HashedString(requestVO.getPassword()));
+                userProxy.createUser(requestVO);
+                registerResponseVO.setRegisterUserSuccessful(true);
+            } else {
+                registerResponseVO.setRegisterUserSuccessful(false);
+            }
+        } catch (ValidationException e) {
+            //LOGGING
+            throw e;
+        }
+        return registerResponseVO;
+    }
+
+    @Override
+    public DelResponseVO delete(DelRequestVO requestVO) throws ValidationException {
+        DelResponseVO delResponseVO = new DelResponseVO();
+        String sessionId = sessionUtil.getSessionId();
+        try {
+            ValidationUtil.validateEmail(requestVO.getEmailId());
+            UserVO userVO = userProxy.getUserByEmail(requestVO.getEmailId());
+            SupplierContext supplierContext = redisContextWrapper.getContext(sessionId, SupplierContext.class);
+            String role = supplierContext.getUserVO().getRole();
+            if (("ADMIN").equals(role)) {
+                if (requestVO.getEmailId().equals(userVO.getEmail())) {
+                    userProxy.deleteUser(requestVO);
+                    delResponseVO.setUserdeletedSuccessful(true);
+                }
+            }
+
+        } catch (ValidationException e) {
+            //LOGGING
+            throw e;
+        }
+        return delResponseVO;
     }
 }

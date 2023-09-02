@@ -1,10 +1,9 @@
 package com.root.authservice.service;
 
-import com.root.authservice.vo.AuthRequestVO;
-import com.root.authservice.vo.AuthResponseVO;
-import com.root.authservice.vo.OtpRequestVO;
-import com.root.authservice.vo.OtpResponseVO;
+import com.root.authservice.vo.*;
 import com.root.commondependencies.exception.ValidationException;
+import com.root.commondependencies.vo.DelRequestVO;
+import com.root.commondependencies.vo.UserVO;
 
 public interface LoginService {
 
@@ -15,4 +14,7 @@ public interface LoginService {
 
     OtpResponseVO validateOtp(OtpRequestVO otpRequest) throws ValidationException;
 
+    RegisterResponseVO register(UserVO requestVO) throws ValidationException;
+
+    DelResponseVO delete(DelRequestVO requestVO) throws ValidationException;
 }
