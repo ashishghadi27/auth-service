@@ -1,7 +1,7 @@
 package com.root.authservice.helpers;
 
 import com.root.authservice.config.ConsulConfig;
-import com.root.authservice.vo.UserVO;
+import com.root.commondependencies.vo.UserVO;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;

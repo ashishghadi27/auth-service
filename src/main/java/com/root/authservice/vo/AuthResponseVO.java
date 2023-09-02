@@ -1,5 +1,6 @@
 package com.root.authservice.vo;
 
+import com.root.commondependencies.vo.UserVO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
