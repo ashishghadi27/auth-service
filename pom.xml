@@ -70,7 +70,7 @@
 		<dependency>
 			<groupId>com.root</groupId>
 			<artifactId>redis</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.1-20230903.174002-5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>
@@ -94,7 +94,16 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
+	<repositories>
+		<repository>
+			<id>localrepo</id>
+			<url>http://localhost:8081/repository/localrepo-hosted-snapshot/</url>
+		</repository>
+		<repository>
+			<id>maven-public</id>
+			<url>http://localhost:8081/repository/maven-public/</url>
+		</repository>
+	</repositories>
 	<build>
 		<plugins>
 			<plugin>
